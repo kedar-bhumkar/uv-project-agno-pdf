@@ -1,0 +1,119 @@
+[project]
+name = "agno-pdf-agent"
+dynamic = ["version"]  # Remove static version and add this line
+description = "agno pdf agent"
+readme = "README.md"
+authors = [
+    { name = "Kedar Bhumkar", email = "kedar.bhumkar@gmail.com" }
+]
+requires-python = ">=3.12"
+
+dependencies = [
+  "agno",
+  "aiofiles",
+  "alembic",
+  "azure-ai-inference",
+  "azure-identity>=1.22.0",
+  "beautifulsoup4",
+  "duckduckgo-search",
+  "fastapi[standard]",
+  "fitz>=0.0.1.dev2",
+  "googlesearch-python",
+  "lancedb>=0.22.0",
+  "lxml_html_clean",
+  "newspaper4k",
+  "openai",
+  "pgvector",
+  "psycopg[binary]",
+  "pycountry",
+  "pypdf",
+  "sqlalchemy",
+  "structlog",
+  "tiktoken",
+  "typer",
+  "yfinance",
+]
+
+[dependency-groups]
+dev = [
+  "langwatch-scenario>=0.1.3",
+  "poethepoet>=0.34.0",
+  "pytest>=8.3.5",
+  "ruff>=0.11.7",
+  "ty>=0.0.1a6",
+]
+
+[project.scripts]
+app = "app.main:app"
+
+[build-system]
+requires = ["hatchling", "uv-dynamic-versioning"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.uv-dynamic-versioning]
+fallback-version = "0.1.0"
+
+# Change this value to use a different directory for the agno workspace.
+# [tool.agno]
+# workspace = "workspace"
+
+[tool.ruff]
+line-length = 120
+fix = true
+target-version = "py311"
+exclude = [".venv*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "Q", "I", "ASYNC", "T20"]
+ignore = ["F401", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore `F401` (import violations) in all `__init__.py` files
+"__init__.py" = ["F401", "F403"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"unittest".msg = "Use `pytest` instead."
+
+[tool.ty]
+respect-ignore-files = true
+
+[tool.ty.rules]
+unused-ignore-comment = "warn"
+redundant-cast = "ignore"
+possibly-unbound-attribute = "error"
+possibly-unbound-import = "error"
+
+#[tool.uv]
+#native-tls = true
+
+[tool.uv.pip]
+no-annotate = true
+
+[tool.pytest.ini_options]
+log_cli = true
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+addopts = ["-v", "--strict-markers"]
+pythonpath = ["."]
+
+[tool.poe.tasks]
+# run with eg `uv run poe fmt`
+fmt = "ruff format ${PWD}"
+lint = "ruff check --fix ${PWD}"
+check = "ty check ${PWD}"
+test = "pytest ${PWD}"
+# run all the above
+all = [{ ref = "fmt" }, { ref = "lint" }, { ref = "check" }, { ref = "test" }]
+
+echo = "echo ${PWD}"
+
+"ci:fmt" = "ruff format --check ${PWD}" # fail if not formatted
+"ci:lint" = "ruff check ${PWD}"
